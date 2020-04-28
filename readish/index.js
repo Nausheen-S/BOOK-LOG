@@ -37,15 +37,74 @@ const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 //authenticate
 var sha256 = require('js-sha256');
+var SALT = "secure";
 
 
 // ------------------Routes-----------------
 
-
+//REDIRECT TO LOGIN PAGE
 app.get ('/',(request,response)=>{
-
+    response.redirect('/login');
 
 });
+
+//LOGIN USER FORM
+app.get('/login',(request, response)=>{
+    response.render('login');
+});
+
+// LOGIN POST TO DB
+app.post('/login',(request,response)=>{
+    var values = [request.body.name,request.body.password];
+    var query = 'SELECT * FROM users WHERE name = '+request.body.name;
+    console.log(values);
+    pool.query(query, values, (error, result)=>{
+    if( error ){
+        response.send("error");
+        console.log(error);
+    }else if(result.rows.length === 0){
+        const message ={
+            message:"Looks like you haven't registered yet. Please register here"
+        }
+        response.render('/register', message);
+    }
+    // if there is a result in the array
+    if( result.rows.length > 0 ){
+      // we have a match with the name
+      let requestPassword = request.body.password;
+
+        if(sha256( requestPassword) === result.rows[0].password){
+
+            let user_id = result.rows[0].id;
+
+        // set a secret code in the cookie that we can verify
+            var hashedCookie = sha256(SALT + user_id);
+
+            response.cookie('logged in', hashedCookie);
+            response.cookie('user_id', user_id);
+            response.redirect('/books');
+        }else{
+            response.status(403);
+            response.send("Wrong password");
+        }
+
+    }else{
+      // nothing matched
+      response.status(403);
+      response.send("sorry! Something is wrong");
+    }
+
+    })
+    //response.send("working");
+});
+
+//REGISTER FORM
+app.get('/register',(request, response)=>{
+    response.render('register');
+});
+
+//REGISTER POST TO DB
+
 
 // Listen to requests on port 3000
 

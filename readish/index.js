@@ -32,6 +32,7 @@ const reactEngine = require('express-react-views').createEngine();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jsx');
 app.engine('jsx', reactEngine);
+app.use(express.static('public'));
 //cookies
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
@@ -54,45 +55,44 @@ app.get('/login',(request, response)=>{
 });
 
 // LOGIN POST TO DB
-app.post('/login',(request,response)=>{
-    var values = [request.body.name,request.body.password];
-    var query = 'SELECT * FROM users WHERE name = '+request.body.name;
+app.post('/loggedin',(request,response)=>{
+    var values = [request.body.name];
+    var query = 'SELECT * FROM users WHERE name = $1';
     console.log(values);
     pool.query(query, values, (error, result)=>{
-    if( error ){
-        response.send("error");
-        console.log(error);
-    }else if(result.rows.length === 0){
-        const message ={
-            message:"Looks like you haven't registered yet. Please register here"
+            console.log(result.rows);
+        if( error ){
+            response.send("error");
+            console.log(error);
+        }else if(result.rows.length === 0){
+            response.redirect('/register');
+            return;
         }
-        response.render('/register', message);
-    }
-    // if there is a result in the array
-    if( result.rows.length > 0 ){
-      // we have a match with the name
-      let requestPassword = request.body.password;
+        // if there is a result in the array
+        if( result.rows.length > 0 ){
+          // we have a match with the name
+          let requestPassword = request.body.password;
 
-        if(sha256( requestPassword) === result.rows[0].password){
+            if(sha256( requestPassword) === result.rows[0].password){
 
-            let user_id = result.rows[0].id;
+                let user_id = result.rows[0].id;
 
-        // set a secret code in the cookie that we can verify
-            var hashedCookie = sha256(SALT + user_id);
+            // set a secret code in the cookie that we can verify
+                var hashedCookie = sha256(SALT + user_id);
 
-            response.cookie('logged in', hashedCookie);
-            response.cookie('user_id', user_id);
-            response.redirect('/books');
+                response.cookie('logged in', hashedCookie);
+                response.cookie('user_id', user_id);
+                response.redirect('/books');
+            }else{
+                response.status(403);
+                response.send("Wrong password");
+            }
+
         }else{
-            response.status(403);
-            response.send("Wrong password");
+          // nothing matched
+          response.status(403);
+          response.send("No matching result");
         }
-
-    }else{
-      // nothing matched
-      response.status(403);
-      response.send("sorry! Something is wrong");
-    }
 
     })
     //response.send("working");
@@ -104,7 +104,116 @@ app.get('/register',(request, response)=>{
 });
 
 //REGISTER POST TO DB
+app.post('/registered',(request,response)=>{
+    const query1 = 'SELECT * FROM users WHERE name= $1';
+    var values = [request.body.name];
+    console.log(values);
+    pool.query(query1, values, (error, result)=>{
+         console.log(result.rows);
+        if( error ){
+            response.send("Something went wrong. Please refresh and try again");
+            console.log(error);
+        }else{
+            if(result.rows.length === 0){
+                const query = 'INSERT INTO users (name, password) VALUES ($1, $2) RETURNING *';
+                var hashedPassword = sha256(request.body.password);
 
+                const values = [request.body.name, hashedPassword];
+                pool.query(query, values, (error, result)=>{
+                    if( error ){
+                        response.send("Something went wrong. Please refresh and try again");
+                        console.log(error);
+                    }else{
+                        //response.send("registered");
+                        let user_id = result.rows[0].id;
+                        var hashedCookie = sha256(SALT + user_id);
+
+                        response.cookie('logged in', hashedCookie);
+                        response.cookie('user_id', user_id);
+                        response.redirect('/books');
+                    }
+                })
+            }else{
+                response.redirect('/login');
+            }
+        }
+    })
+});
+
+//BOOK LIST DISPLAY
+app.get('/books',(request,response)=>{
+    const query = 'SELECT * FROM books';
+    pool.query(query, (error,result)=>{
+        if( error ){
+            response.send("Some error occurred.Cannot display books.");
+            console.log(error);
+        }else{
+            var data = {
+                books: result.rows
+            }
+            response.render('booklist',data);
+        }
+    })
+
+});
+app.get('/about/:id',(request,response)=>{
+    //console.log(this.body.name);
+    const query = 'SELECT * FROM books WHERE id = $1';
+    let values = [request.params.id];
+    pool.query(query, values,(error,result)=>{
+        if( error ){
+            response.send("Some error occurred.Cannot display books.");
+            console.log(error);
+        }else{
+            var data = {
+                id: result.rows[0].id,
+                name: result.rows[0].name,
+                author: result.rows[0].author,
+                genre:result.rows[0].genre,
+                about: result.rows[0].about
+            }
+            console.log(result.rows[0])
+            response.render('about',data);
+        }
+    })
+
+});
+
+// CREATE READING LIST FOR USER
+app.post('/readinglist', (request, response)=>{
+  let query = "INSERT INTO readinglist (user_id,book_id,completed) VALUES ($1, $2, $3)";
+
+  const values = [request.cookies['user_id'],request.body.book_id,request.body.completed];
+
+  pool.query(query, values, (error, result)=>{
+    if( error ){
+      console.log("Some error occurred");
+      console.log( error );
+    }else{
+      response.send('worked')
+       //response.redirect('/readinglist/:id');
+    }
+  })
+});
+
+//CREATE READING LIST FOR PARTICULAR USER
+app.get('/readinglist/:id',(request,response)=>{
+    const query = 'SELECT * FROM readinglist WHERE user_id ='+request.params.id;
+    pool.query(query, (error, result)=>{
+    if( error ){
+      console.log("Some error occurred");
+      console.log( error );
+    }else{
+        var data = {
+            books: result.rows[0].book_id
+        }
+        console.log(result.rows[0].book_id);
+      //response.send('worked')
+       response.render('readinglist',data);
+    }
+  })
+
+});
 
 // Listen to requests on port 3000
 

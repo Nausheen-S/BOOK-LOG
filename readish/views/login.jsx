@@ -5,7 +5,7 @@ class Login extends React.Component {
       <html>
         <div>
             <h1>User Login</h1>
-            <form method = "POST" action = "/login">
+            <form method = "POST" action = "/loggedin">
                 <div>
                     Name <input type = "text" name = "name"/>
                 </div>
@@ -16,7 +16,7 @@ class Login extends React.Component {
                     <button type = "submit">Submit</button>
                 </div>
             </form>
-            <p>Don't Have an account?<a href = "/register">Register</a></p>
+            <p>Don't Have an account?<a href = "/register">Register Here</a></p>
         </div>
       </html>
 

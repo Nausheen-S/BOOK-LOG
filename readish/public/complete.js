@@ -9,7 +9,8 @@ var btnClick = function(event){
     //console.log("trying");
   });
   var data = {
-    book_id:bookIdText.innerText
+    book_id:bookIdText.innerText,
+    completed: true
     //user_id: request.cookies['user_id']
   };
 
@@ -20,6 +21,6 @@ var btnClick = function(event){
 }
 var bookIdText = document.querySelector('#bookId');
 console.log(bookIdText);
-var button = document.querySelector('#list');
+var button = document.querySelector('#completed');
 console.log(button);
   button.addEventListener('click', btnClick);

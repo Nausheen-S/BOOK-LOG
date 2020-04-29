@@ -205,9 +205,9 @@ app.get('/readinglist/:id',(request,response)=>{
       console.log( error );
     }else{
         var data = {
-            books: result.rows[0].book_id
+            books: result.rows
         }
-        console.log(result.rows[0].book_id);
+        console.log(result.rows);
       //response.send('worked')
        response.render('readinglist',data);
     }

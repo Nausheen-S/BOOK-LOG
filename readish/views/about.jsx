@@ -17,8 +17,9 @@ class About extends React.Component {
 
           </div>
             <button type="submit" id = "list">Add to my reading list</button>
-            <button type="submit">Mark as completed</button>
+            <button type="submit" id = "completed">Mark as completed</button>
             <script src = "/script.js"></script>
+            <script src = "/complete.js"></script>
         </body>
       </html>
     );

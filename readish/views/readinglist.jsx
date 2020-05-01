@@ -5,10 +5,17 @@ class ReadingList extends React.Component {
 
     const readingList = this.props.books.map((book)=>{
         //const url  = `/about/${book.id}`;
-        return (<li>{book.book_id}</li>)
+        //console.log(book.completed);
+        //const completed = book.completed? "completed" : "not completed"
+        return (<li>{book.name}</li>)
 
     })
-    console.log(this.props.id);
+    /*const completedList = this.props.complete.map((book)=>{
+        //const url  = `/about/${book.id}`;
+        return (<li>{complete.completed}</li>)
+
+    })*/
+    //console.log("completed",this.props.completed);
     return (
       <html>
         <body>
@@ -18,6 +25,7 @@ class ReadingList extends React.Component {
 
           </ul>
         </body>
+
       </html>
     );
   }

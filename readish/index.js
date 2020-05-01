@@ -140,22 +140,35 @@ app.post('/registered',(request,response)=>{
     })
 });
 
+//LOGOUT
+app.get('/logout/:id', (request, response) => {
+
+    response.clearCookie('logged in');
+    response.clearCookie('user_id');
+    response.redirect('/');
+});
+
 //BOOK LIST DISPLAY
 app.get('/books',(request,response)=>{
     const query = 'SELECT * FROM books';
-    pool.query(query, (error,result)=>{
+
+    pool.query(query,  (error,result)=>{
         if( error ){
             response.send("Some error occurred.Cannot display books.");
             console.log(error);
         }else{
             var data = {
-                books: result.rows
+                books: result.rows,
+                userId: request.cookies['user_id']
             }
             response.render('booklist',data);
-        }
+            }
+
     })
 
 });
+
+//INFORMATION ON EACH BOOK
 app.get('/about/:id',(request,response)=>{
     //console.log(this.body.name);
     const query = 'SELECT * FROM books WHERE id = $1';
@@ -179,7 +192,7 @@ app.get('/about/:id',(request,response)=>{
 
 });
 
-// CREATE READING LIST FOR USER
+// POST READING LIST FOR USER
 app.post('/readinglist', (request, response)=>{
   let query = "INSERT INTO readinglist (user_id,book_id,completed) VALUES ($1, $2, $3)";
 
@@ -198,22 +211,52 @@ app.post('/readinglist', (request, response)=>{
 
 //CREATE READING LIST FOR PARTICULAR USER
 app.get('/readinglist/:id',(request,response)=>{
-    const query = 'SELECT * FROM readinglist WHERE user_id ='+request.params.id;
-    pool.query(query, (error, result)=>{
+    //const query = 'SELECT * FROM readinglist WHERE user_id ='+request.params.id;
+    //const query = 'SELECT DISTINCT books.name, readinglist.user_id,readinglist.book_id, readinglist.completed FROM readinglist INNER JOIN books ON (books.id = readinglist.book_id) WHERE user_id = $1';
+    //+ request.params.id;
+    const query = 'SELECT DISTINCT books.name FROM readinglist INNER JOIN books ON (books.id = readinglist.book_id) WHERE user_id = $1';
+    const values = [request.cookies['user_id']];
+    pool.query(query,values, (error, result)=>{
+
     if( error ){
       console.log("Some error occurred");
       console.log( error );
     }else{
         var data = {
-            books: result.rows
+            books: result.rows,
+            userId: request.cookies['user_id']
         }
-        console.log(result.rows);
-      //response.send('worked')
+        //response.send(data);
        response.render('readinglist',data);
     }
   })
 
 });
+
+//CREATE COMPLETED LIST FOR EACH USER
+app.get('/completed/:id',(request,response)=>{
+    //const query = 'SELECT * FROM readinglist WHERE user_id ='+request.params.id;
+    const query = 'SELECT DISTINCT books.name, readinglist.completed FROM readinglist INNER JOIN books ON (books.id = readinglist.book_id) WHERE user_id = $1 AND readinglist.completed = "completed"';
+    const values = [request.cookies['user_id']];
+    pool.query(query, values,(error, result)=>{
+        //console.log(readinglist.completed)
+    if( error ){
+      console.log("Some error occurred");
+      console.log( error );
+    }else{
+        var data = {
+            books:result.rows,
+            userId: request.cookies['user_id']
+        }
+        console.log(result.rows[0].completed)
+        //response.send(data);
+       response.render('completedlist',data);
+    }
+  })
+
+});
+
+
 
 // Listen to requests on port 3000
 

@@ -2,6 +2,10 @@ var React = require('react');
 
 class About extends React.Component {
   render() {
+        /*const readingList = false;
+        const readingListButton = readingList ? (<div></div>) : (<button type="submit" id = "list">Add to my reading list</button>);
+        {readingListButton}
+        */
     return (
       <html>
         <body>
@@ -16,6 +20,7 @@ class About extends React.Component {
           <div>
 
           </div>
+
             <button type="submit" id = "list">Add to my reading list</button>
             <button type="submit" id = "completed">Mark as completed</button>
             <script src = "/script.js"></script>

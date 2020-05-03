@@ -1,32 +1,17 @@
-body{
-	background-color: #cc0066;
-}
-#sub-title{
+h1{
 	font-family: 'Pacifico', cursive;
 	color: white;
 	text-align: center;
 	font-size: 80px;
 }
-ul{
-	text-decoration: none;
-}
+
 li{
 	list-style: none;
-	cursor: pointer;
-}
-a{
-	color: #BDBDBD ;
-}
-a:hover{
-	color: #FF8A65;
-	text-decoration: none;
-}
-.items{
 	font-family: 'Indie Flower', cursive;
-	color: white;
-	text-align: center;
+	color: #FF8A65;
 	font-size: 60px;
 }
+
 button{
 	cursor: pointer;
 	border-style: none;
@@ -35,6 +20,7 @@ button{
 	color: #FF8A65;
 	font-size: 28px;
 	font-weight: bolder;
+	padding-right: 30px;
 }
 button:hover{
 	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);

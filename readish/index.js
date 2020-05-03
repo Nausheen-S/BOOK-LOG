@@ -109,7 +109,7 @@ app.post('/registered',(request,response)=>{
     var values = [request.body.name];
     console.log(values);
     pool.query(query1, values, (error, result)=>{
-         console.log(result.rows);
+         //console.log(result.rows);
         if( error ){
             response.send("Something went wrong. Please refresh and try again");
             console.log(error);
@@ -185,7 +185,7 @@ app.get('/about/:id',(request,response)=>{
                 genre:result.rows[0].genre,
                 about: result.rows[0].about
             }
-            console.log(result.rows[0])
+            //console.log(result.rows[0])
             response.render('about',data);
         }
     })
@@ -248,7 +248,7 @@ app.get('/completed/:id',(request,response)=>{
             books:result.rows,
             userId: request.cookies['user_id']
         }
-        console.log(result.rows[0].completed)
+        //console.log(result.rows[0].completed)
         //response.send(data);
        response.render('completedlist',data);
     }
